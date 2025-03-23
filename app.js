@@ -33,6 +33,10 @@ class ScheduleConverter {
         this.tabBtns = document.querySelectorAll('.tab-btn');
         this.tabPanes = document.querySelectorAll('.tab-pane');
         
+        // Skipped dates elements
+        this.skippedDatesContainer = document.getElementById('skipped-dates-container');
+        this.addSkippedDateBtn = document.getElementById('add-skipped-date');
+        
         // Set default dates
         const today = new Date();
         this.startDate.valueAsDate = today;
@@ -84,6 +88,10 @@ class ScheduleConverter {
                 });
             });
         });
+        
+        // Skipped dates events
+        this.addSkippedDateBtn.addEventListener('click', () => this.addSkippedDateField());
+        this.handleInitialSkippedDate();
     }
 
     addClass() {
@@ -106,6 +114,11 @@ class ScheduleConverter {
             return;
         }
         
+        // Get skipped dates
+        const skippedDates = Array.from(this.skippedDatesContainer.querySelectorAll('.skipped-date'))
+            .map(input => input.value)
+            .filter(date => date); // Filter out empty values
+        
         // Create class object
         const classObj = {
             id: Date.now(),
@@ -115,7 +128,8 @@ class ScheduleConverter {
             startTime: this.startTime.value,
             endTime: this.endTime.value,
             startDate: this.startDate.value,
-            endDate: this.endDate.value
+            endDate: this.endDate.value,
+            skippedDates: skippedDates
         };
         
         // Add to classes array
@@ -138,6 +152,37 @@ class ScheduleConverter {
         // Enable export buttons
         this.exportIcsBtn.disabled = false;
         this.exportCsvBtn.disabled = false;
+    }
+
+    handleInitialSkippedDate() {
+        const initialRow = this.skippedDatesContainer.querySelector('.skipped-date-row');
+        if (initialRow) {
+            const removeBtn = initialRow.querySelector('.remove-date-btn');
+            removeBtn.addEventListener('click', () => this.removeSkippedDateField(initialRow));
+        }
+    }
+
+    addSkippedDateField() {
+        const dateRow = document.createElement('div');
+        dateRow.className = 'skipped-date-row';
+        
+        const dateInput = document.createElement('input');
+        dateInput.type = 'date';
+        dateInput.className = 'skipped-date';
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-date-btn';
+        removeBtn.textContent = '×';
+        removeBtn.addEventListener('click', () => this.removeSkippedDateField(dateRow));
+        
+        dateRow.appendChild(dateInput);
+        dateRow.appendChild(removeBtn);
+        this.skippedDatesContainer.appendChild(dateRow);
+    }
+
+    removeSkippedDateField(row) {
+        row.remove();
     }
 
     updateClassesDisplay() {
@@ -171,6 +216,7 @@ class ScheduleConverter {
                 <p><strong>Days:</strong> ${formattedDays}</p>
                 <p><strong>Time:</strong> ${this.formatTime(classObj.startTime)} - ${this.formatTime(classObj.endTime)}</p>
                 <p><strong>Dates:</strong> ${this.formatDate(classObj.startDate)} - ${this.formatDate(classObj.endDate)}</p>
+                ${classObj.skippedDates.length ? `<p><strong>Skipped Dates:</strong> ${classObj.skippedDates.map(date => this.formatDate(date)).join(', ')}</p>` : ''}
                 <button class="remove-class" data-id="${classObj.id}">×</button>
             `;
             
@@ -192,6 +238,15 @@ class ScheduleConverter {
         }
     }
 
+    shouldSkipDate(date, skippedDates) {
+        return skippedDates.some(skipDate => {
+            const skip = new Date(skipDate);
+            return date.getFullYear() === skip.getFullYear() &&
+                   date.getMonth() === skip.getMonth() &&
+                   date.getDate() === skip.getDate();
+        });
+    }
+
     exportIcs() {
         const events = [];
         
@@ -207,24 +262,26 @@ class ScheduleConverter {
                 
                 while (currentDate <= endDate) {
                     if (currentDate.getDay() === dayMap[day]) {
-                        const [startHour, startMin] = classObj.startTime.split(':').map(Number);
-                        const [endHour, endMin] = classObj.endTime.split(':').map(Number);
-                        
-                        const eventString = [
-                            'BEGIN:VEVENT',
-                            'CLASS:PUBLIC',
-                            `DESCRIPTION:${CONFIG.includeDescriptionInEvents ? `Class: ${classObj.name}` : ''}`,
-                            `DTSTART:${this.formatDateTimeForIcs(currentDate, startHour, startMin)}`,
-                            `DTEND:${this.formatDateTimeForIcs(currentDate, endHour, endMin)}`,
-                            `LOCATION:${classObj.location || ''}`,
-                            'SEQUENCE:0',
-                            'STATUS:CONFIRMED',
-                            `SUMMARY:${classObj.name}`,
-                            'TRANSP:OPAQUE',
-                            'END:VEVENT'
-                        ].join('\r\n');
-                        
-                        events.push(eventString);
+                        if (!this.shouldSkipDate(currentDate, classObj.skippedDates)) {
+                            const [startHour, startMin] = classObj.startTime.split(':').map(Number);
+                            const [endHour, endMin] = classObj.endTime.split(':').map(Number);
+                            
+                            const eventString = [
+                                'BEGIN:VEVENT',
+                                'CLASS:PUBLIC',
+                                `DESCRIPTION:${CONFIG.includeDescriptionInEvents ? `Class: ${classObj.name}` : ''}`,
+                                `DTSTART:${this.formatDateTimeForIcs(currentDate, startHour, startMin)}`,
+                                `DTEND:${this.formatDateTimeForIcs(currentDate, endHour, endMin)}`,
+                                `LOCATION:${classObj.location || ''}`,
+                                'SEQUENCE:0',
+                                'STATUS:CONFIRMED',
+                                `SUMMARY:${classObj.name}`,
+                                'TRANSP:OPAQUE',
+                                'END:VEVENT'
+                            ].join('\r\n');
+                            
+                            events.push(eventString);
+                        }
                     }
                     currentDate.setDate(currentDate.getDate() + 1);
                 }
@@ -263,19 +320,21 @@ class ScheduleConverter {
                 
                 while (currentDate <= endDate) {
                     if (currentDate.getDay() === dayMap[day]) {
-                        const formattedDate = `${currentDate.getMonth() + 1}/${currentDate.getDate()}/${currentDate.getFullYear()}`;
-                        
-                        rows.push([
-                            classObj.name,                                          // Subject
-                            formattedDate,                                         // Start Date
-                            this.formatTimeForCsv(classObj.startTime),             // Start Time
-                            formattedDate,                                         // End Date
-                            this.formatTimeForCsv(classObj.endTime),               // End Time
-                            'FALSE',                                               // All Day Event
-                            CONFIG.includeDescriptionInEvents ? `Class: ${classObj.name}` : '',  // Description
-                            classObj.location,                                     // Location
-                            'FALSE'                                                // Private
-                        ]);
+                        if (!this.shouldSkipDate(currentDate, classObj.skippedDates)) {
+                            const formattedDate = `${currentDate.getMonth() + 1}/${currentDate.getDate()}/${currentDate.getFullYear()}`;
+                            
+                            rows.push([
+                                classObj.name,                                          // Subject
+                                formattedDate,                                         // Start Date
+                                this.formatTimeForCsv(classObj.startTime),             // Start Time
+                                formattedDate,                                         // End Date
+                                this.formatTimeForCsv(classObj.endTime),               // End Time
+                                'FALSE',                                               // All Day Event
+                                CONFIG.includeDescriptionInEvents ? `Class: ${classObj.name}` : '',  // Description
+                                classObj.location,                                     // Location
+                                'FALSE'                                                // Private
+                            ]);
+                        }
                     }
                     currentDate.setDate(currentDate.getDate() + 1);
                 }

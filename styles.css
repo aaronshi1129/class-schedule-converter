@@ -281,3 +281,43 @@ footer a {
 .footer-link:hover .footer-icon {
     transform: scale(1.1);
 }
+
+#skipped-dates-container {
+    margin-bottom: 10px;
+}
+
+.skipped-date-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.skipped-date {
+    flex: 1;
+}
+
+.remove-date-btn {
+    background: none;
+    border: none;
+    color: var(--danger-color);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0 5px;
+}
+
+.btn-secondary {
+    background-color: #95a5a6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 15px;
+}
+
+.btn-secondary:hover {
+    background-color: #7f8c8d;
+}
