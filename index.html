@@ -1,0 +1,145 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Schedule to Calendar Converter</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="importmap">
+        {
+            "imports": {
+                "ics": "https://cdn.jsdelivr.net/npm/ics@3.1.0/+esm"
+            }
+        }
+    </script>
+    <script src="config.js" type="module"></script>
+    <script src="app.js" type="module"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Class Schedule to Calendar Converter</h1>
+        </header>
+        
+        <main>
+            <section class="schedule-builder">
+                <h2>Build Your Schedule</h2>
+                <form id="class-form">
+                    <div class="form-group">
+                        <label for="class-name">Class Name:</label>
+                        <input type="text" id="class-name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="class-location">Location:</label>
+                        <input type="text" id="class-location">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="class-days">Days:</label>
+                        <div class="days-container">
+                            <label><input type="checkbox" name="class-days" value="MO"> Monday</label>
+                            <label><input type="checkbox" name="class-days" value="TU"> Tuesday</label>
+                            <label><input type="checkbox" name="class-days" value="WE"> Wednesday</label>
+                            <label><input type="checkbox" name="class-days" value="TH"> Thursday</label>
+                            <label><input type="checkbox" name="class-days" value="FR"> Friday</label>
+                            <label><input type="checkbox" name="class-days" value="SA"> Saturday</label>
+                            <label><input type="checkbox" name="class-days" value="SU"> Sunday</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group time-group">
+                        <div>
+                            <label for="start-time">Start Time:</label>
+                            <input type="time" id="start-time" required>
+                        </div>
+                        <div>
+                            <label for="end-time">End Time:</label>
+                            <input type="time" id="end-time" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group date-group">
+                        <div>
+                            <label for="start-date">Semester Start Date:</label>
+                            <input type="date" id="start-date" required>
+                        </div>
+                        <div>
+                            <label for="end-date">Semester End Date:</label>
+                            <input type="date" id="end-date" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn">Add Class</button>
+                </form>
+            </section>
+            
+            <section class="schedule-display">
+                <h2>Your Classes</h2>
+                <div id="classes-list">
+                    <p id="no-classes-message">No classes added yet.</p>
+                </div>
+                
+                <div class="export-options">
+                    <h3>Export Options</h3>
+                    <button id="export-ics" class="btn" disabled>Export as iCal (.ics)</button>
+                    <button id="export-csv" class="btn" disabled>Export as CSV</button>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>Created by Aaron Shi<a href="https://sites.google.com/view/aaronshi/" target="_blank" style="vertical-align: middle; margin-left: 10px;">
+    <img src="https://alittlemoreenglish.weebly.com/uploads/2/6/6/3/26638990/favicon-32x32_orig.png" alt="A Little More English" style="width: 24px; height: 24px; vertical-align: middle;">
+  </a> | <a href="#" id="help-link">How to Import</a> 
+            </p>
+        </footer>
+        
+        <div id="help-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>How to Import Your Schedule</h3>
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="google">Google Calendar</button>
+                    <button class="tab-btn" data-tab="apple">Apple Calendar</button>
+                    <button class="tab-btn" data-tab="outlook">Outlook</button>
+                </div>
+                <div class="tab-content">
+                    <div id="google" class="tab-pane active">
+                        <h4>Google Calendar</h4>
+                        <ol>
+                            <li>Export your schedule as CSV</li>
+                            <li>Go to <a href="https://calendar.google.com" target="_blank">Google Calendar</a></li>
+                            <li>Click on the gear icon ⚙️, then "Settings"</li>
+                            <li>Click "Import & Export" on the left</li>
+                            <li>Click "Select file from your computer" and choose your CSV file</li>
+                            <li>Select the calendar you want to import to</li>
+                            <li>Click "Import"</li>
+                        </ol>
+                    </div>
+                    <div id="apple" class="tab-pane">
+                        <h4>Apple Calendar</h4>
+                        <ol>
+                            <li>Export your schedule as .ics file</li>
+                            <li>Open the Calendar app on your Apple device</li>
+                            <li>Go to File > Import</li>
+                            <li>Select the .ics file you exported</li>
+                            <li>Click "Import"</li>
+                        </ol>
+                    </div>
+                    <div id="outlook" class="tab-pane">
+                        <h4>Outlook</h4>
+                        <ol>
+                            <li>Export your schedule as .ics file</li>
+                            <li>Open Outlook</li>
+                            <li>Go to File > Open & Export > Import/Export</li>
+                            <li>Select "Import an iCalendar (.ics) or vCalendar file (.vcs)"</li>
+                            <li>Browse to your .ics file and open it</li>
+                            <li>Choose whether to add to your calendar or create a new calendar</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
