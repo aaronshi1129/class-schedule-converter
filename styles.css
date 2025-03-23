@@ -19,9 +19,11 @@
 
 body {
     line-height: 1.6;
-    background: linear-gradient(135deg, #f6d5f7, #fbe9d7, #d4f5ff, #e0f7fa);
-    background-size: 400% 400%;
-    animation: gradientBackground 15s ease infinite;
+    background-image: url('background-1.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin: 0;
 }
 
 .container {
